@@ -18,6 +18,8 @@ target/
 *.iws
 *.iml
 *.ipr
+src/main/resources/application.properties
+apikey.txt
 
 ### NetBeans ###
 /nbproject/private/
