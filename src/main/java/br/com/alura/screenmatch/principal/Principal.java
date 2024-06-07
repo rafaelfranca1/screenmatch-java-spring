@@ -23,7 +23,7 @@ public class Principal {
         this.repositorio = repositorio;
     }
 
-    public void showMenu() {
+    public void exibeMenu() {
         var opcao = -1;
         while(opcao != 0) {
             var menu = """
