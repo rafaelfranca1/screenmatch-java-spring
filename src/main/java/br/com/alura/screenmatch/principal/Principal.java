@@ -14,7 +14,8 @@ public class Principal {
     private ConsumoAPI consumo = new ConsumoAPI();
     private ConverteDados conversor = new ConverteDados();
     private final String ENDERECO = "https://www.omdbapi.com/?t=";
-    private final String API_KEY = "&apikey=6585022c";
+    private final String API_KEY = "&apikey=5957b2d8";
+
     private SerieRepository repositorio;
     private List<Serie> series = new ArrayList<>();
     private Optional<Serie> serieBuscada;
@@ -113,7 +114,6 @@ public class Principal {
 
         if (serie.isPresent()) {
             var serieEncontrada = serie.get();
-
             List<DadosTemporada> temporadas = new ArrayList<>();
 
             for (int i = 1; i <= serieEncontrada.getTotalTemporadas(); i++) {
@@ -234,5 +234,30 @@ public class Principal {
                     System.out.printf("%s T%sE%s - %s\n", e.getDataLancamento().getYear(), e.getTemporada(),
                             e.getNumero(), e.getTitulo()));
         }
+    }
+
+    public void adicionarEpisodiosParaTodasSeries() {
+        List<Serie> series = repositorio.findAll();
+
+        series.forEach(serie -> {
+            List<DadosTemporada> temporadas = new ArrayList<>();
+
+            for (int i = 1; i <= serie.getTotalTemporadas(); i++) {
+                var json = consumo.obterDados(ENDERECO + serie.getTitulo().replace(" ", "+") + "&season=" + i + API_KEY);
+                DadosTemporada dadosTemporada = conversor.obterDados(json, DadosTemporada.class);
+                temporadas.add(dadosTemporada);
+            }
+            temporadas.forEach(System.out::println);
+
+            List<Episodio> episodios = temporadas.stream()
+                    .flatMap(t -> t.episodios().stream()
+                            .map(e -> new Episodio(t.numero(), e)))
+                    .collect(Collectors.toList());
+
+            serie.setEpisodios(episodios);
+            repositorio.save(serie);
+        });
+
+        System.out.println("Episódios adicionados para todas as séries.");
     }
 }
