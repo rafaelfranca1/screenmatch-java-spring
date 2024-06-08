@@ -19,6 +19,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 //	@Override
 //	public void run(String... args) throws Exception {
 //		Principal principal = new Principal(repositorio);
-//		principal.exibeMenu();
+//		principal.adicionaEpisodio();
 //	}
 //}

@@ -260,4 +260,43 @@ public class Principal {
 
         System.out.println("Episódios adicionados para todas as séries.");
     }
+
+    public void adicionaSeries() {
+        String[] titulos = {
+            "breaking bad"
+        };
+
+        for (int i = 0; i < titulos.length; i++) {
+            var nomeSerie = titulos[i];
+            var json = consumo.obterDados(ENDERECO + nomeSerie.replace(" ", "+") + API_KEY);
+            DadosSerie dados = conversor.obterDados(json, DadosSerie.class);
+            repositorio.save(new Serie(dados));
+        }
+
+        System.out.println("Serie adicionada.");
+    }
+
+    public void adicionaEpisodio() {
+        Optional<Serie> serie = repositorio.findByTituloContainingIgnoreCase("breaking bad");
+
+        if (serie.isPresent()) {
+            List<DadosTemporada> temporadas = new ArrayList<>();
+
+            for (int i = 1; i <= serie.get().getTotalTemporadas(); i++) {
+                var json = consumo.obterDados(ENDERECO + serie.get().getTitulo().replace(" ", "+") + "&season=" + i + API_KEY);
+                DadosTemporada dadosTemporada = conversor.obterDados(json, DadosTemporada.class);
+                temporadas.add(dadosTemporada);
+            }
+            temporadas.forEach(System.out::println);
+
+            List<Episodio> episodios = temporadas.stream()
+                    .flatMap(t -> t.episodios().stream()
+                            .map(e -> new Episodio(t.numero(), e)))
+                    .collect(Collectors.toList());
+
+            serie.get().setEpisodios(episodios);
+            repositorio.save(serie.get());
+            System.out.println("Episódios adicionados para a série: " + serie.get().getTitulo());
+        }
+    }
 }
